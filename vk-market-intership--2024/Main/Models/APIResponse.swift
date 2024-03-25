@@ -42,19 +42,5 @@ struct APIResponse: Codable {
             case temperature2mMin = "temperature_2m_min"
         }
     }
-
-//    public func create(from jsonObject: [String: Any]) {
-//        guard let jsonCurrent = jsonObject["current"] as? [String : Any],
-//        let timeString = jsonCurrent[Current.CodingKeys.time.rawValue] as? String,
-//              let temperature2m = jsonCurrent[Current.CodingKeys.temperature2m.rawValue] as? Float,
-//              let relativeHumidity2m = jsonCurrent[Current.CodingKeys.relativeHumidity2m.rawValue] as? Float,
-//              let rain = jsonCurrent[Current.CodingKeys.rain.rawValue] as? Float,
-//              let surfacePressure = jsonCurrent[Current.CodingKeys.surfacePressure.rawValue] as? Float,
-//            let windSpeed10m = jsonCurrent[Current.CodingKeys.windSpeed10m.rawValue] as? Float else { return }
-//
-//        self.current = Current(time: timeString, temperature2m: temperature2m, relativeHumidity2m: relativeHumidity2m, precipitation: rain, rain: rain, surfacePressure: surfacePressure, windSpeed10m: windSpeed10m)
-//        self.daily =
-//
-//    }
 }
 

@@ -9,7 +9,6 @@ import Foundation
 import CoreLocation
 import MapKit
 
-
 class MainViewModel: NSObject {
     var weatherData: APIResponse?
     var weatherLocation: LocationInfo
@@ -28,17 +27,14 @@ class MainViewModel: NSObject {
         self.locationManager.requestWhenInUseAuthorization()
     }
 
-    public func requestCurrentLocation(completion: ((Bool) -> Void)? = nil)  {
+    public func requestCurrentLocation()  {
         switch self.locationManager.authorizationStatus {
         case .authorizedAlways, .authorizedWhenInUse:
             self.locationManager.requestLocation()
-            completion?(true)
         case .denied, .restricted:
             UserDefaultsWorker.shared.saveLocationInfo(locationInfo: LocationInfo(latitude: 00, longitude: 00))
-            completion?(false)
         default:
             authLocationManager()
-            print("break")
             break
         }
     }
@@ -63,13 +59,11 @@ extension MainViewModel: CLLocationManagerDelegate {
     }
 
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
-        print("User location updated")
-
         guard let latitude = locations.last?.coordinate.latitude as? Double,
               let longitude = locations.last?.coordinate.longitude as? Double else { return }
+
         self.weatherLocation = LocationInfo(latitude: latitude, longitude: longitude)
         UserDefaultsWorker.shared.saveLocationInfo(locationInfo: self.weatherLocation )
-        print(weatherLocation)
         getLocationCity()
     }
 
@@ -80,14 +74,9 @@ extension MainViewModel: CLLocationManagerDelegate {
 
     func getLocationCity(locationInfo: LocationInfo = UserDefaultsWorker.shared.getLocationInfo())  {
         let location = CLLocation(latitude: CLLocationDegrees(floatLiteral: locationInfo.latitude), longitude: CLLocationDegrees(floatLiteral: locationInfo.longitude))
-        print(UserDefaultsWorker.shared.getLocationInfo())
         CLGeocoder().reverseGeocodeLocation(location, completionHandler: {(placemarks, error) -> Void in
-            if error != nil {
-                print(error)
-            } else if let country = placemarks?.first?.country,
-                      let city = placemarks?.first?.locality {
+             if let city = placemarks?.first?.locality {
                 UserDefaultsWorker.shared.saveCityInfo(city: city)
-                print(city)
                 NotificationCenter.default.post(name: .dataPipeline, object: nil)
             }
         })

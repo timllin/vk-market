@@ -9,7 +9,9 @@ import UIKit
 import MapKit
 
 protocol SearchViewControllerOutput: AnyObject {
+    func searchCurrentLocation()
     func searchWasEnded()
+
 }
 
 class SearchViewController: UIViewController {
@@ -51,26 +53,22 @@ class SearchViewController: UIViewController {
         setupUI()
     }
 
-    override func viewWillDisappear(_ animated: Bool) {
-        super.viewWillDisappear(animated)
-        delegate?.searchWasEnded()
-    }
-
     private func setupUI() {
         view.backgroundColor = UIColor(named: "PrimaryColor")
         view.addSubview(searchField)
         view.addSubview(tableView)
         NSLayoutConstraint.activate([
-            searchField.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 25),
+            searchField.topAnchor.constraint(equalTo: view.layoutMarginsGuide.topAnchor, constant: 50),
             searchField.leadingAnchor.constraint(equalTo: view.layoutMarginsGuide.leadingAnchor),
             searchField.trailingAnchor.constraint(equalTo: view.layoutMarginsGuide.trailingAnchor),
 
-            tableView.topAnchor.constraint(equalTo: searchField.bottomAnchor, constant: 16),
+            tableView.topAnchor.constraint(equalTo: searchField.bottomAnchor, constant: 5),
             tableView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor),
             tableView.trailingAnchor.constraint(equalTo: view.layoutMarginsGuide.trailingAnchor),
             tableView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor)
         ])
         searchField.addTarget(self, action: #selector(textFieldDidChange(_:)), for: .editingChanged)
+
     }
 
 }
@@ -79,6 +77,11 @@ extension SearchViewController: UITextFieldDelegate {
     @objc func textFieldDidChange(_ textField: UITextField) {
         guard let text = textField.text else { return }
         completer.queryFragment = text
+    }
+
+    @objc func headerTap() {
+        delegate?.searchCurrentLocation()
+        dismiss(animated: true)
     }
 }
 
@@ -96,21 +99,32 @@ extension SearchViewController: UITableViewDelegate & UITableViewDataSource {
         return cell
     }
 
+    func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
+        return 44
+    }
+
+    func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
+        let headerView = HeaderView()
+        let tapRecognizer = UITapGestureRecognizer(target: self, action: #selector(headerTap))
+        headerView.addGestureRecognizer(tapRecognizer)
+        return headerView
+    }
+
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
         let item = cityResults[indexPath.row]
         let request = MKLocalSearch.Request()
         request.naturalLanguageQuery = item.createQuery()
         let search = MKLocalSearch(request: request)
-        search.start { (response, error) in
+        search.start {[weak self] (response, error) in
             guard let response = response else {return}
             let coordinate = response.boundingRegion.center
 
-            guard let latitude = coordinate.latitude as? Double,
-                  let longitude = coordinate.longitude as? Double else { return }
-            let weatherLocation = LocationInfo(latitude: latitude, longitude: longitude)
+            guard let self = self else { return }
+            let weatherLocation = LocationInfo(latitude: coordinate.latitude, longitude: coordinate.longitude)
             UserDefaultsWorker.shared.saveLocationInfo(locationInfo: weatherLocation)
             UserDefaultsWorker.shared.saveCityInfo(city: item.title)
+            self.delegate?.searchWasEnded()
             self.dismiss(animated: true)
         }
     }

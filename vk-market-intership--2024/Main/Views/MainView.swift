@@ -87,6 +87,17 @@ class MainView: UIScrollView {
         return view
     }()
 
+    private lazy var acitivityIndicator : UIActivityIndicatorView = {
+        let indicator = UIActivityIndicatorView()
+        indicator.translatesAutoresizingMaskIntoConstraints = false
+        indicator.heightAnchor.constraint(equalToConstant: 25).isActive = true
+        indicator.widthAnchor.constraint(equalToConstant: 25).isActive = true
+        indicator.hidesWhenStopped = true
+        indicator.style = .medium
+        indicator.color = .gray
+        return indicator
+    }()
+
     override init(frame: CGRect) {
         super.init(frame: frame)
         setupView()
@@ -111,6 +122,7 @@ class MainView: UIScrollView {
         addSubview(separator)
         addSubview(forecastLabel)
         addSubview(tableView)
+        addSubview(acitivityIndicator)
 
         NSLayoutConstraint.activate([
             cityButton.topAnchor.constraint(equalTo: self.topAnchor, constant: 20),
@@ -140,18 +152,30 @@ class MainView: UIScrollView {
             tableView.topAnchor.constraint(equalTo: forecastLabel.bottomAnchor, constant: 8),
             tableView.leadingAnchor.constraint(equalTo: layoutMarginsGuide.leadingAnchor),
             tableView.trailingAnchor.constraint(equalTo: layoutMarginsGuide.trailingAnchor),
-            tableView.bottomAnchor.constraint(equalTo: self.bottomAnchor)])
+            tableView.bottomAnchor.constraint(equalTo: self.bottomAnchor),
+
+            acitivityIndicator.centerXAnchor.constraint(equalTo: self.centerXAnchor),
+            acitivityIndicator.topAnchor.constraint(equalTo: self.topAnchor, constant: 20)])
     }
 
     public func configureView(with data: APIResponse, for city: String) {
         cityButton.setTitle(city, for: .normal)
-        currentTempLabel.text = makeCelcuis(data.current.temperature2m) //String(format: "%.0f", data.current.temperature2m)
-        feelsLikeTempLabel.text = "Feels like " + makeCelcuis(data.current.apparentTemperature)//String(format: "%.0f", data.current.apparentTemperature)
+        currentTempLabel.text = makeCelcuis(data.current.temperature2m) 
+        feelsLikeTempLabel.text = "Feels like " + makeCelcuis(data.current.apparentTemperature)
         for subview in currentlyInfoStack.arrangedSubviews {
             guard let subview = subview as? CurrentElementView else { return }
             subview.configureView(with: data.current)
         }
+    }
 
+    public func startLoading() {
+        cityButton.isHidden = !cityButton.isHidden
+        acitivityIndicator.startAnimating()
+    }
+
+    public func stopLoading() {
+        acitivityIndicator.stopAnimating()
+        cityButton.isHidden = !cityButton.isHidden
     }
 }
 

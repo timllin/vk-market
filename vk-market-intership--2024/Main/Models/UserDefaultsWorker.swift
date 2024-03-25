@@ -27,8 +27,8 @@ class UserDefaultsWorker {
 
     public func getLocationInfo() -> LocationInfo {
         let defaults = UserDefaults.standard
-        let latitude = defaults.double(forKey: UserDefaultsWorker.keyLatitude)
-        let longitude = defaults.double(forKey: UserDefaultsWorker.keyLongitude)
+        let latitude = defaults.object(forKey: UserDefaultsWorker.keyLatitude) as? Double ?? 00
+        let longitude = defaults.object(forKey: UserDefaultsWorker.keyLongitude) as? Double ?? 00
         return LocationInfo(latitude: latitude, longitude: longitude)
     }
 

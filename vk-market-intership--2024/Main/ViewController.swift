@@ -25,6 +25,7 @@ class ViewController: UIViewController {
     }
 
     private func updateLocationData() {
+        self.mainView.startLoading()
         self.viewModel.requestCurrentLocation()
     }
 
@@ -44,7 +45,7 @@ class ViewController: UIViewController {
     }
 
     @objc func dataPipelineDone() {
-        print("yss")
+        self.mainView.stopLoading()
         updateUI()
     }
 }
@@ -82,5 +83,9 @@ extension ViewController: SearchViewControllerOutput {
     func searchWasEnded() {
         viewModel.updateWeatherLocation()
         updateUI()
+    }
+
+    func searchCurrentLocation() {
+        updateLocationData()
     }
 }
