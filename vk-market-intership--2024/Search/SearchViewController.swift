@@ -38,10 +38,15 @@ class SearchViewController: UIViewController {
     private lazy var searchField: UITextField = {
         let field = UITextField()
         field.translatesAutoresizingMaskIntoConstraints = false
+        field.heightAnchor.constraint(equalToConstant: 35).isActive = true
         field.font = UIFont.systemFont(ofSize: 14)
         field.placeholder = "Search for a city"
         field.textColor = UIColor(named: "SecondaryColor")
         field.delegate = self
+        field.layer.cornerRadius = 8
+        field.backgroundColor = .systemGray5
+        field.leftView = UIView(frame: CGRect(x: 0, y: 0, width: 4, height: 35))
+        field.leftViewMode = .always
         return field
     }()
 
@@ -133,7 +138,7 @@ extension SearchViewController: UITableViewDelegate & UITableViewDataSource {
 extension SearchViewController: MKLocalSearchCompleterDelegate {
     func completerDidUpdateResults(_ completer: MKLocalSearchCompleter) {
         completionResults = completer.results
-        completionResults = completionResults.filter({ (result) -> Bool in return result.title != "" && !result.subtitle.contains("найти") })
+        completionResults = completionResults.filter({ (result) -> Bool in return result.title != "" && !result.subtitle.contains("найти")  && !result.subtitle.contains("Search")})
         if completionResults.count > 0 {
            var newResults: [SearchInfo] = []
            for result in completionResults {

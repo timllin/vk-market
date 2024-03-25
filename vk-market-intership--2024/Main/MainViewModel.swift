@@ -51,7 +51,6 @@ extension MainViewModel: CLLocationManagerDelegate {
     func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
         switch manager.authorizationStatus {
         case .authorizedAlways, .authorizedWhenInUse, .denied, .restricted:
-            print(manager.authorizationStatus.rawValue)
             requestCurrentLocation()
         default:
             break
@@ -68,6 +67,8 @@ extension MainViewModel: CLLocationManagerDelegate {
     }
 
     func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
+        UserDefaultsWorker.shared.saveLocationInfo(locationInfo: LocationInfo(latitude: 00, longitude: 00))
+        getLocationCity()
         print(error.localizedDescription)
     }
 
